@@ -86,13 +86,16 @@ def inception_block(inputs,
     return _model(inputs)
 
 
-def InceptionI3d(model_name: str = 'InceptionI3d',
-                 input_shape: Tuple = (16, 224, 224, 3),
-                 classes: int = 4000,
+def InceptionI3d(input_shape: Tuple = (16, 224, 224, 3),
+                 classes: int = 400,
                  activation: str = 'relu',
                  configs: List[BranchConfig] = config_list,
                  drop_out=0.8,
+                 model_name: str = 'InceptionI3d',
                  ):
+
+    if len(input_shape) != 4:
+        raise ValueError('length of input_shape must be 4 to represent a 3D image.')
     img_input = layers.Input(shape=input_shape)
 
     x = conv_block(img_input, 64, 7,
@@ -128,10 +131,9 @@ def InceptionI3d(model_name: str = 'InceptionI3d',
                             )
 
     with tf.name_scope('Logits'):
-        # x = layers.GlobalAvgPool3D()(x)
-        x = layers.AveragePooling3D(pool_size=(2, 7, 7), strides=1, padding='same')(x)
+        x = layers.GlobalAvgPool3D()(x)
         x = layers.Dropout(drop_out)(x)
-        x = conv_block(x, classes, 1, activation=None, use_bias=True, bn=None, name='Conv3d_0c_1x1')
+        x = layers.Dense(classes, use_bias=True, activation='softmax')(x)
 
     model = Model(inputs=img_input, outputs=x, name=model_name)
     return model
