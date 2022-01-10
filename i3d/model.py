@@ -1,4 +1,5 @@
 import tensorflow as tf
+from tensorflow.keras import backend
 from tensorflow.keras import layers
 from tensorflow.keras import Model
 
@@ -44,7 +45,7 @@ def conv_block(inputs,
                           use_bias=use_bias,
                           padding='same')(inputs)
         if bn is not None:
-            x = bn()(x)
+            x = bn(scale=False)(x)
         if activation is not None:
             x = layers.Activation(activation=activation)(x)
     return x
@@ -91,12 +92,24 @@ def InceptionI3d(input_shape: Tuple = (16, 224, 224, 3),
                  activation: str = 'relu',
                  configs: List[BranchConfig] = config_list,
                  drop_out=0.8,
+                 include_head=True,
+                 input_tensor=None,
                  model_name: str = 'InceptionI3d',
                  ):
 
     if len(input_shape) != 4:
         raise ValueError('length of input_shape must be 4 to represent a 3D image.')
-    img_input = layers.Input(shape=input_shape)
+    if input_tensor is None:
+        img_input = layers.Input(shape=input_shape)
+    else:
+        if backend.backend() == 'tensorflow':
+            from tensorflow.keras.backend import is_keras_tensor
+        else:
+            is_keras_tensor = backend.is_keras_tensor
+        if not is_keras_tensor(input_tensor):
+            img_input = layers.Input(tensor=input_tensor, shape=input_shape)
+        else:
+            img_input = input_tensor
 
     x = conv_block(img_input, 64, 7,
                    activation=activation,
@@ -130,10 +143,12 @@ def InceptionI3d(input_shape: Tuple = (16, 224, 224, 3),
                             activation=activation
                             )
 
-    with tf.name_scope('Logits'):
-        x = layers.GlobalAvgPool3D()(x)
-        x = layers.Dropout(drop_out)(x)
-        x = layers.Dense(classes, use_bias=True, activation='softmax')(x)
+    if include_head:
+        with tf.name_scope('Logits'):
+            x = layers.GlobalAvgPool3D()(x)
+            if drop_out is not None and drop_out > 0:
+                x = layers.Dropout(drop_out)(x)
+            x = layers.Dense(classes, use_bias=True, activation='softmax')(x)
 
     model = Model(inputs=img_input, outputs=x, name=model_name)
     return model
