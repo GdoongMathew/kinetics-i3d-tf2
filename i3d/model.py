@@ -2,9 +2,13 @@ import tensorflow as tf
 from tensorflow.keras import backend
 from tensorflow.keras import layers
 from tensorflow.keras import Model
+from tensorflow.keras import utils as keras_utils
 
 from typing import Union, Tuple, List
 from collections import namedtuple
+
+from .weights import WEIGHTS_MAP, PRETRAINED_WEIGHTS_URL
+
 
 BranchConfig = namedtuple('BranchConfig', ('Branch_Name', 'Branch_0_Channels', 'Branch_1_Channels', 'Branch_2_Channels', 'Branch_3_Channels'))
 config_list = [
@@ -152,8 +156,18 @@ def InceptionI3d(input_shape: Tuple = (16, 224, 224, 3),
             x = layers.Dense(classes, use_bias=True, activation='softmax')(x)
 
     model = Model(inputs=img_input, outputs=x, name=model_name)
-    if weights is not None:
+
+    if weights in ['kinetics-400', ]:
+        file_name = WEIGHTS_MAP[weights]
+        weight_path = keras_utils.get_file(
+            file_name,
+            PRETRAINED_WEIGHTS_URL + file_name,
+            cache_subdir='models'
+        )
+        model.load_weights(weight_path)
+    elif weights:
         model.load_weights(weights)
+
     return model
 
 
