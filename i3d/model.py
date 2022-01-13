@@ -95,6 +95,7 @@ def InceptionI3d(input_shape: Tuple = (16, 224, 224, 3),
                  include_head=True,
                  input_tensor=None,
                  model_name: str = 'InceptionI3d',
+                 weights='kinetics_400.500',
                  ):
 
     if len(input_shape) != 4:
@@ -151,6 +152,8 @@ def InceptionI3d(input_shape: Tuple = (16, 224, 224, 3),
             x = layers.Dense(classes, use_bias=True, activation='softmax')(x)
 
     model = Model(inputs=img_input, outputs=x, name=model_name)
+    if weights is not None:
+        model.load_weights(weights)
     return model
 
 
