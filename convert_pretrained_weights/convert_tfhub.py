@@ -7,7 +7,7 @@ from i3d import InceptionI3d
 i3d = hub.KerasLayer('https://tfhub.dev/deepmind/i3d-kinetics-400/1', trainable=True)
 for w in i3d.weights:
     print(f'{w.name}:   {w.shape}')
-i3d_custom = InceptionI3d(classes=400)
+i3d_custom = InceptionI3d(classes=400, include_top=False, weights=None)
 
 custom_official_map = {
     'conv3d/kernel:0':                          'RGB/inception_i3d/Conv3d_1a_7x7/conv_3d/w:0',
@@ -338,7 +338,7 @@ for layer in i3d_custom.layers:
     else:
         copy_weights(layer)
 
-i3d_custom.save('k400.h5')
+i3d_custom.save('kinetics-400_no_top.h5')
 
 for key in official_weights.keys():
     print(key)
