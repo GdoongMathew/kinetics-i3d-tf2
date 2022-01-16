@@ -96,10 +96,10 @@ def InceptionI3d(input_shape: Tuple = (16, 224, 224, 3),
                  activation: str = 'relu',
                  configs: List[BranchConfig] = config_list,
                  drop_out=0.8,
-                 include_head=True,
+                 include_top=True,
                  input_tensor=None,
                  model_name: str = 'InceptionI3d',
-                 weights='kinetics_400.500',
+                 weights='kinetics-400',
                  ):
 
     if len(input_shape) != 4:
@@ -148,7 +148,7 @@ def InceptionI3d(input_shape: Tuple = (16, 224, 224, 3),
                             activation=activation
                             )
 
-    if include_head:
+    if include_top:
         with tf.name_scope('Logits'):
             x = layers.GlobalAvgPool3D()(x)
             if drop_out is not None and drop_out > 0:
@@ -157,8 +157,8 @@ def InceptionI3d(input_shape: Tuple = (16, 224, 224, 3),
 
     model = Model(inputs=img_input, outputs=x, name=model_name)
 
-    if weights in ['kinetics-400', ]:
-        file_name = WEIGHTS_MAP[weights]
+    if weights in ['kinetics-400', 'kinetics-600', 'imagenet']:
+        file_name = WEIGHTS_MAP[weights][include_top]
         weight_path = keras_utils.get_file(
             file_name,
             PRETRAINED_WEIGHTS_URL + file_name,
