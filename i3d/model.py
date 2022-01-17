@@ -153,7 +153,7 @@ def InceptionI3d(input_shape: Tuple = (16, 224, 224, 3),
             x = layers.GlobalAvgPool3D()(x)
             if drop_out is not None and drop_out > 0:
                 x = layers.Dropout(drop_out)(x)
-            x = layers.Dense(classes, use_bias=True, activation='softmax')(x)
+            x = layers.Dense(classes, use_bias=True, activation='softmax', dtype=tf.float32)(x)
 
     model = Model(inputs=img_input, outputs=x, name=model_name)
 
