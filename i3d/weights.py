@@ -7,7 +7,7 @@ WEIGHTS_MAP = {
     },
     'kinetics-600': {
         True: 'kinetics-600.h5',
-        False: 'kinetics-600.h5'
+        False: 'kinetics-600_no_top.h5'
     },
     'imagenet': {
         True: 'imagenet.h5',
